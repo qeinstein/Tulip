@@ -117,15 +117,18 @@ def spitch_tts(text: str, voice_id: str, lang: str = "en") -> Iterator[bytes]:
 async def voice_entry(request: Request):
     print("mo to debi 1")
     form_data = await request.form()
+    print("before signature")
     signature = request.headers.get("X-Twilio-Signature", "")
+    print("before url")
+
     url = str(request.url)
-    
+    print("before validator")
     validation_url = f"{BASE_URL}/voice"
     if not twilio_validator.validate(validation_url, dict(form_data), signature):
         raise HTTPException(status_code=403, detail="Invalid Twilio signature")
 
 
-
+    print("before vr")
     twiml = VoiceResponse()
     print("mo to debi 2")
 
