@@ -79,37 +79,59 @@ LANGUAGE_SELECTION: Dict[str, tuple] = {}  # CallSid -> (lang_name, lang_code_tw
 CONVERSATION_HISTORY: Dict[str, list] = {}  # CallSid -> history
 
 
+from spitch import Spitch
 
-def spitch_tts(text: str, voice_id: str, lang: str = "en") -> Iterator[bytes]:
+spitch = Spitch(api_key=SPITCH_API_KEY)
 
-    url = "https://api.spi-tch.com/v1/synthesize"
-    headers = {
-        "Authorization": f"Bearer {SPITCH_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "language": lang,
-        "voice": voice_id,
-        "text": text
-    }
+def spitch_tts(text: str, voice_id: str, lang: str = "en"):
+    text = text.strip()
+    if not text:
+        text = "I didn't catch that."
+
+    response = spitch.speech.generate(
+        text=text,
+        language=lang,
+        voice=voice_id,
+        format="mp3"
+    )
+    # Read full file because SDK does not stream chunks
+    audio_bytes = response.read()
     
-    try:
-        resp = requests.post(
-            url, 
-            headers=headers, 
-            json=payload, 
-            stream=True
-        )
+    # Yield in chunks to keep your streaming pipeline intact
+    chunk_size = 4096
+    for i in range(0, len(audio_bytes), chunk_size):
+        yield audio_bytes[i:i+chunk_size]
+
+# def spitch_tts(text: str, voice_id: str, lang: str = "en") -> Iterator[bytes]:
+
+#     url = "https://api.spi-tch.com/v1/synthesize"
+#     headers = {
+#         "Authorization": f"Bearer {SPITCH_API_KEY}",
+#         "Content-Type": "application/json"
+#     }
+#     payload = {
+#         "language": lang,
+#         "voice": voice_id,
+#         "text": text
+#     }
+    
+#     try:
+#         resp = requests.post(
+#             url, 
+#             headers=headers, 
+#             json=payload, 
+#             stream=True
+#         )
         
-        resp.raise_for_status() 
+#         resp.raise_for_status() 
 
-    except Exception as e:
-        logger.error(f"Spitch TTS request failed. Payload={payload}", exc_info=True)
-        raise
+#     except Exception as e:
+#         logger.error(f"Spitch TTS request failed. Payload={payload}", exc_info=True)
+#         raise
 
-    for chunk in resp.iter_content(chunk_size=4096): # Using a slightly larger chunk size for better audio streaming performance
-        if chunk:
-            yield chunk
+#     for chunk in resp.iter_content(chunk_size=4096): # Using a slightly larger chunk size for better audio streaming performance
+#         if chunk:
+#             yield chunk
 
 
 
