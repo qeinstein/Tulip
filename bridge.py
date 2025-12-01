@@ -158,9 +158,9 @@ async def process_language(request: Request, Digits: str = Form(None), CallSid: 
     signature = request.headers.get("X-Twilio-Signature", "")
     url = str(request.url)
     
-    validation_url = f"{BASE_URL}/process_language"
-    if not twilio_validator.validate(validation_url, dict(form_data), signature):
-        raise HTTPException(status_code=403, detail="Invalid Twilio signature")
+    # validation_url = f"{BASE_URL}/process_language"
+    # if not twilio_validator.validate(validation_url, dict(form_data), signature):
+    #     raise HTTPException(status_code=403, detail="Invalid Twilio signature")
 
     twiml = VoiceResponse()
     if not (Digits and CallSid and Digits in LANGUAGE_MAP):
