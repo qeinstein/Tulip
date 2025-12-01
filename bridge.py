@@ -30,10 +30,12 @@ app.add_middleware(
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000").rstrip("/")
+print(BASE_URL)
 SPITCH_API_KEY = os.getenv("SPITCH_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 MODEL = os.getenv("model_name")
+
 
 required_vars = [
     "SPITCH_API_KEY",
@@ -113,6 +115,7 @@ def spitch_tts(text: str, voice_id: str, lang: str = "en") -> Iterator[bytes]:
 
 @app.post("/voice")
 async def voice_entry(request: Request):
+    print("mo to debi 1")
     form_data = await request.form()
     signature = request.headers.get("X-Twilio-Signature", "")
     url = str(request.url)
@@ -121,13 +124,19 @@ async def voice_entry(request: Request):
     if not twilio_validator.validate(validation_url, dict(form_data), signature):
         raise HTTPException(status_code=403, detail="Invalid Twilio signature")
 
+
+
     twiml = VoiceResponse()
+    print("mo to debi 2")
+
     gather = twiml.gather(
         num_digits=1,
         action="/process_language",
         method="POST",
         timeout=8
     )
+    print("mo to debi 3")
+
     gather.say("Welcome to Tulip. For Yoruba press 1. For Igbo press 2. For Hausa press 3. For English press 4.")
     twiml.redirect("/process_language_fallback")
     return Response(content=str(twiml), media_type="application/xml")
