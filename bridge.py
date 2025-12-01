@@ -330,6 +330,7 @@ async def relay_websocket(websocket: WebSocket):
                                 json.dumps({
                                     "type": "audio",
                                     "audio": base64_audio,
+                                    "media-format": "audio/mpeg",
                                     "last": False # Indicate more chunks are coming
                                 })
                             )
