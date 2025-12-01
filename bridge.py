@@ -5,7 +5,8 @@ import asyncio
 import requests
 import base64
 from typing import Dict, Any, Iterator
-from fastapi import FastAPI, Request, Form, HTTPException, WebSocket, Depends
+from fastapi import FastAPI, Request, Form, HTTPException, WebSocket, Depends, 
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from twilio.twiml.voice_response import VoiceResponse
 from twilio.request_validator import RequestValidator
@@ -14,14 +15,25 @@ from openai import AsyncOpenAI
 from urllib.parse import urlparse
 from starlette.websockets import WebSocketDisconnect, WebSocketState
 
-app = FastAPI()
+app = FastAPI(title = "Tulip's Backend")
 load_dotenv()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+
+)
+
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000").rstrip("/")
 SPITCH_API_KEY = os.getenv("SPITCH_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
-MODEL = os.getenv("model_name") # Defaulting to a modern model
+MODEL = os.getenv("model_name")
 
 required_vars = [
     "SPITCH_API_KEY",
