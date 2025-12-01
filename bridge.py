@@ -221,16 +221,15 @@ async def relay_websocket(websocket: WebSocket):
                 
                 _, _, lang_spitch = LANGUAGE_SELECTION.get(call_sid, ("English", "en-US", "en"))
 
-                # STT NOTE: Twilio already transcribed this. We translate it 
-                # to English for the LLM to process reliably.
-                if lang_spitch != "en":
-                    try:
-                        english_text = spitch_translate(user_text, source=lang_spitch, target="en")
-                    except Exception as e:
-                        logger.error(f"Translation error (input): {e}")
-                        english_text = user_text
-                else:
-                    english_text = user_text
+
+                # if lang_spitch != "en":
+                #     try:
+                #         english_text = spitch_translate(user_text, source=lang_spitch, target="en")
+                #     except Exception as e:
+                #         logger.error(f"Translation error (input): {e}")
+                #         english_text = user_text
+                # else:
+                english_text = user_text
 
                 history = CONVERSATION_HISTORY.get(call_sid, [{"role": "system", "content": SYSTEM_PROMPT}])
                 history.append({"role": "user", "content": english_text})
@@ -258,7 +257,6 @@ async def relay_websocket(websocket: WebSocket):
                         if interrupted or not reply_en:
                             return # Stop if interrupted or no reply was generated
 
-                        # 2. TRANSLATE FULL TEXT (from LLM's English reply to local language)
                         if lang_spitch != "en":
                             try:
                                 reply_local = spitch_translate(reply_en, source="en", target=lang_spitch)
