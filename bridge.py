@@ -123,9 +123,9 @@ async def voice_entry(request: Request):
 
     url = str(request.url)
     print("before validator")
-    validation_url = f"{BASE_URL}/voice"
-    if not twilio_validator.validate(validation_url, dict(form_data), signature):
-        raise HTTPException(status_code=403, detail="Invalid Twilio signature")
+    # validation_url = f"{BASE_URL}/voice"
+    # if not twilio_validator.validate(validation_url, dict(form_data), signature):
+    #     raise HTTPException(status_code=403, detail="Invalid Twilio signature")
 
 
     print("before vr")
