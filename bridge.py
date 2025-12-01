@@ -258,8 +258,11 @@ async def relay_websocket(websocket: WebSocket):
 
             elif event_type == "prompt":
                 user_text = message.get("voicePrompt")
+                print(f"user_text: {user_text}")
                 if not user_text or not user_text.strip():
+                    print("no user text")
                     continue
+
 
                 if current_response_task and not current_response_task.done():
                     interrupted = True
@@ -293,14 +296,18 @@ async def relay_websocket(websocket: WebSocket):
                             stream=True
                         )
                         async for chunk in stream:
+                            print(f"new_chunk below")
+                            print(chunk)
                             if interrupted:
                                 logger.info("LLM stream interrupted.")
                                 break
                             delta = chunk.choices[0].delta.content or ""
                             if delta:
+                                print("delta exists")
                                 reply_en += delta
                         
                         if interrupted or not reply_en:
+                            print("it was interupted or there's no reply")
                             return # Stop if interrupted or no reply was generated
 
                         if lang_spitch != "en":
@@ -319,11 +326,11 @@ async def relay_websocket(websocket: WebSocket):
                         audio_stream_generator = spitch_tts(reply_local, voice_for_lang, lang_spitch)
                         
                         for audio_chunk in audio_stream_generator:
+                            print("New audio chunk")
                             if interrupted:
                                 logger.info("Audio stream interrupted.")
                                 break
                             
-                            # CRITICAL FIX: Base64 encode the audio chunk and send as "audio" type
                             base64_audio = base64.b64encode(audio_chunk).decode('utf-8')
                             
                             await websocket.send_text(
@@ -331,17 +338,17 @@ async def relay_websocket(websocket: WebSocket):
                                     "type": "audio",
                                     "audio": base64_audio,
                                     "media-format": "audio/mpeg",
-                                    "last": False # Indicate more chunks are coming
+                                    "last": False
                                 })
                             )
 
-                        # 4. FINAL CLEANUP AND HISTORY UPDATE
                         if not interrupted:
                             # Send final empty audio chunk to signal the end of the TTS stream
                             await websocket.send_text(
                                 json.dumps({
                                     "type": "audio",
                                     "audio": "",
+                                    "media-format": "audio/mpeg", # this is where i added the guy
                                     "last": True
                                 })
                             )
