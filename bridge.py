@@ -5,7 +5,7 @@ import asyncio
 import requests
 import base64
 from typing import Dict, Any, Iterator
-from fastapi import FastAPI, Request, Form, HTTPException, WebSocket, Depends, 
+from fastapi import FastAPI, Request, Form, HTTPException, WebSocket, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from twilio.twiml.voice_response import VoiceResponse
