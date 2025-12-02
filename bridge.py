@@ -316,8 +316,8 @@ async def relay_websocket(websocket: WebSocket):
                         #         reply_en += delta_text
 
                         async for chunk in stream:
-                            print(f"new_chunk below")
-                            print(chunk)
+                            # print(f"new_chunk below")
+                            # print(chunk)
                             if interrupted:
                                 logger.info("LLM stream interrupted.")
                                 break
@@ -331,21 +331,25 @@ async def relay_websocket(websocket: WebSocket):
 
                             if text.strip():
                                 reply_en += text
+                            print(f"The reply from OR: {reply_en}")
 
 
                         
-                        if interrupted or not reply_en:
-                            print("it was interupted or there's no reply")
-                            return # Stop if interrupted or no reply was generated
+                        if interrupted:
+                            print("it was interupted")
+                            return
+                        elif not reply_en:
+                            print("no reply was generated") # Stop if interrupted or no reply was generated
+                            return
 
-                        if lang_spitch != "en":
-                            try:
-                                reply_local = spitch_translate(reply_en, source="en", target=lang_spitch)
-                            except Exception as e:
-                                logger.error(f"Translation error (output): {e}")
-                                reply_local = reply_en
-                        else:
-                            reply_local = reply_en
+                        # if lang_spitch != "en":
+                        #     try:
+                        #         reply_local = spitch_translate(reply_en, source="en", target=lang_spitch)
+                        #     except Exception as e:
+                        #         logger.error(f"Translation error (output): {e}")
+                        #         reply_local = reply_en
+                        # else:
+                         reply_local = reply_en
                         
                         logger.info(f"Final Reply (Local): {reply_local}")
 
