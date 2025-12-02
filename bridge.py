@@ -349,20 +349,21 @@ async def relay_websocket(websocket: WebSocket):
                         #         logger.error(f"Translation error (output): {e}")
                         #         reply_local = reply_en
                         # else:
-                         reply_local = reply_en
+
+                        # reply_local = reply_en
                         
-                        logger.info(f"Final Reply (Local): {reply_local}")
+                        logger.info(f"Final Reply: {reply_en}")
 
                         # 3. GENERATE AND STREAM AUDIO CHUNKS
                         voice_for_lang = SPITCH_VOICE_MAP.get(lang_spitch, SPITCH_VOICE_MAP["en"])
-                        audio_stream_generator = spitch_tts(reply_local, voice_for_lang, lang_spitch)
+                        audio_stream_generator = spitch_tts(reply_en, voice_for_lang, lang_spitch)
                         
                         for audio_chunk in audio_stream_generator:
                             print("New audio chunk")
                             if interrupted:
                                 logger.info("Audio stream interrupted.")
                                 break
-                            
+                        
                             base64_audio = base64.b64encode(audio_chunk).decode('utf-8')
                             
                             await websocket.send_text(
