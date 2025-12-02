@@ -294,37 +294,45 @@ async def relay_websocket(websocket: WebSocket):
                             messages=history,
                             stream=True
                         )
-                        async for chunk in stream:
-                            print("new_chunk below")
-                            print(chunk)
-
-                            if interrupted:
-                                logger.info("LLM stream interrupted.")
-                                break
-
-                            delta_obj = chunk.choices[0].delta
-
-                            # Normalize content extraction across providers
-                            delta_text = (
-                                getattr(delta_obj, "content", None)
-                                or getattr(delta_obj, "text", None)
-                                or ""
-                            )
-
-                            if delta_text.strip():
-                                print("delta exists")
-                                reply_en += delta_text
-
                         # async for chunk in stream:
-                        #     print(f"new_chunk below")
+                        #     print("new_chunk below")
                         #     print(chunk)
+
                         #     if interrupted:
                         #         logger.info("LLM stream interrupted.")
                         #         break
-                        #     delta = chunk.choices[0].delta.content or ""
-                        #     if delta:
+
+                        #     delta_obj = chunk.choices[0].delta
+
+                        #     # Normalize content extraction across providers
+                        #     delta_text = (
+                        #         getattr(delta_obj, "content", None)
+                        #         or getattr(delta_obj, "text", None)
+                        #         or ""
+                        #     )
+
+                        #     if delta_text.strip():
                         #         print("delta exists")
-                        #         reply_en += delta
+                        #         reply_en += delta_text
+
+                        async for chunk in stream:
+                            print(f"new_chunk below")
+                            print(chunk)
+                            if interrupted:
+                                logger.info("LLM stream interrupted.")
+                                break
+                            choice = chunk.choices[0]
+                            text = (
+                                getattr(choice.delta, "content", None) or
+                                getattr(choice.delta, "text", None) or
+                                getattr(choice, "text", None) or
+                                ""
+                            )
+
+                            if text.strip():
+                                reply_en += text
+
+
                         
                         if interrupted or not reply_en:
                             print("it was interupted or there's no reply")
@@ -412,7 +420,6 @@ async def relay_websocket(websocket: WebSocket):
                 await websocket.close()
         except Exception:
             pass
-
 
 
 
