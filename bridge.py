@@ -269,6 +269,13 @@ async def relay_websocket(websocket: WebSocket):
                 _, _, lang_spitch = LANGUAGE_SELECTION.get(call_sid, ("English", "en-US", "en"))
 
 
+                # if lang_spitch != "en":
+                #     try:
+                #         english_text = spitch_translate(user_text, source=lang_spitch, target="en")
+                #     except Exception as e:
+                #         logger.error(f"Translation error (input): {e}")
+                #         english_text = user_text
+                # else:
                 english_text = user_text
 
                 history = CONVERSATION_HISTORY.get(call_sid, [{"role": "system", "content": SYSTEM_PROMPT}])
@@ -288,15 +295,36 @@ async def relay_websocket(websocket: WebSocket):
                             stream=True
                         )
                         async for chunk in stream:
-                            print(f"new_chunk below")
+                            print("new_chunk below")
                             print(chunk)
+
                             if interrupted:
                                 logger.info("LLM stream interrupted.")
                                 break
-                            delta = chunk.choices[0].delta.content or ""
-                            if delta:
+
+                            delta_obj = chunk.choices[0].delta
+
+                            # Normalize content extraction across providers
+                            delta_text = (
+                                getattr(delta_obj, "content", None)
+                                or getattr(delta_obj, "text", None)
+                                or ""
+                            )
+
+                            if delta_text.strip():
                                 print("delta exists")
-                                reply_en += delta
+                                reply_en += delta_text
+
+                        # async for chunk in stream:
+                        #     print(f"new_chunk below")
+                        #     print(chunk)
+                        #     if interrupted:
+                        #         logger.info("LLM stream interrupted.")
+                        #         break
+                        #     delta = chunk.choices[0].delta.content or ""
+                        #     if delta:
+                        #         print("delta exists")
+                        #         reply_en += delta
                         
                         if interrupted or not reply_en:
                             print("it was interupted or there's no reply")
